@@ -14,12 +14,16 @@
 		</conditionalStyle>
 	</style>
 	<queryString language="SQL">
-		<![CDATA[
-SELECT name,
-       (SELECT SUM(amount)
+		<![CDATA[SELECT name,
+       (SELECT SUM(amount * quantity)
         FROM activity_items
+               JOIN (SELECT activity_item_id, SUM(target) quantity
+                     FROM activity_item_calendars
+                     GROUP BY activity_item_id) item_calendar ON item_calendar.activity_item_id = activity_items.id
         WHERE expense_class_id IN
-              (WITH RECURSIVE children AS (SELECT id, parent_id, deleted_at FROM expense_classes ec1 WHERE ec1.id = outerEC.id
+              (WITH RECURSIVE children AS (SELECT id, parent_id, deleted_at
+                                           FROM expense_classes ec1
+                                           WHERE ec1.id = outerEC.id
                                            UNION ALL
                                            SELECT ec.id, ec.parent_id, ec.deleted_at
                                            FROM expense_classes ec,
@@ -39,6 +43,9 @@ WHERE parent_id ISNULL]]>
 	<field name="total_amount" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.label" value="total_amount"/>
 	</field>
+	<variable name="total_expense_class" class="java.lang.String" calculation="Sum">
+		<variableExpression><![CDATA[${total_amount}]]></variableExpression>
+	</variable>
 	<background>
 		<band splitType="Stretch"/>
 	</background>
@@ -167,6 +174,27 @@ WHERE parent_id ISNULL]]>
 	</pageFooter>
 	<summary>
 		<band height="473" splitType="Stretch">
+			<frame>
+				<reportElement style="Row" mode="Opaque" x="0" y="0" width="555" height="15" uuid="7b655611-d6bc-4782-a6dd-8caecfe2a509"/>
+				<textField isStretchWithOverflow="true">
+					<reportElement style="Detail" x="0" y="0" width="150" height="30" uuid="8d6857f2-bda9-4e28-babf-e03d88142b99">
+						<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="80f00ef8-a0e6-432a-aa57-628979ace4fc"/>
+					</reportElement>
+					<textElement verticalAlignment="Middle">
+						<font fontName="Liberation Serif" size="14"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Total Expense Classes"]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement style="Detail" x="150" y="0" width="404" height="30" uuid="2c2b4daa-d705-457e-ac42-fc4b7dae27fd">
+						<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="47744255-58d9-4126-a979-d7bbd77bfa6e"/>
+					</reportElement>
+					<textElement verticalAlignment="Middle">
+						<font fontName="Liberation Serif" size="14"/>
+					</textElement>
+					<textFieldExpression><![CDATA["₱ " + new DecimalFormat("###,###,###,###,###.00").format($V{total_expense_class})]]></textFieldExpression>
+				</textField>
+			</frame>
 			<pieChart>
 				<chart evaluationTime="Report">
 					<reportElement x="112" y="112" width="331" height="249" uuid="57cd9fda-62ed-4002-b53c-657cc35c61f7"/>
@@ -186,4 +214,4 @@ WHERE parent_id ISNULL]]>
 			</pieChart>
 		</band>
 	</summary>
-</jasperReport>     
+</jasperReport>
