@@ -14,83 +14,91 @@
 		</conditionalStyle>
 	</style>
 	<queryString language="SQL">
-		<![CDATA[SELECT SUM(amount), (SELECT name FROM expense_classes WHERE id = 1) as name
-FROM activity_items
-WHERE expense_class_id IN
-      (WITH RECURSIVE children AS (SELECT id, parent_id, deleted_at FROM expense_classes ec1 WHERE ec1.id = 1
-                                   UNION ALL
-                                   SELECT ec.id, ec.parent_id, ec.deleted_at
-                                   FROM expense_classes ec,
-                                        children ch
-                                   WHERE ec.parent_id = ch.id)
-      SELECT children.id FROM children WHERE deleted_at ISNULL
-                                         AND parent_id IS NOT NULL)
-  AND deleted_at ISNULL
-  AND year = 2019
-  AND activity_id IN (SELECT oa.activity_id FROM objective_activities oa WHERE oa.year = 2019)]]>
+		<![CDATA[
+SELECT name,
+       (SELECT SUM(amount)
+        FROM activity_items
+        WHERE expense_class_id IN
+              (WITH RECURSIVE children AS (SELECT id, parent_id, deleted_at FROM expense_classes ec1 WHERE ec1.id = outerEC.id
+                                           UNION ALL
+                                           SELECT ec.id, ec.parent_id, ec.deleted_at
+                                           FROM expense_classes ec,
+                                                children ch
+                                           WHERE ec.parent_id = ch.id)
+              SELECT children.id FROM children WHERE deleted_at ISNULL
+                                                 AND parent_id IS NOT NULL)
+          AND deleted_at ISNULL
+          AND year = 2019
+          AND activity_id IN (SELECT oa.activity_id FROM objective_activities oa WHERE oa.year = 2019)) as total_amount
+FROM expense_classes as outerEC
+WHERE parent_id ISNULL]]>
 	</queryString>
-	<field name="sum" class="java.math.BigDecimal">
-		<property name="com.jaspersoft.studio.field.label" value="sum"/>
-	</field>
 	<field name="name" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="name"/>
+	</field>
+	<field name="total_amount" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="total_amount"/>
 	</field>
 	<background>
 		<band splitType="Stretch"/>
 	</background>
 	<title>
 		<band height="136" splitType="Stretch">
-			<image>
-				<reportElement x="0" y="0" width="164" height="126" uuid="ddc15723-2728-421f-b95e-2df9faf64ce1"/>
-				<imageExpression><![CDATA["coffee.jpg"]]></imageExpression>
+			<staticText>
+				<reportElement style="Title" positionType="Float" x="170" y="0" width="384" height="62" uuid="2d8052c4-2eb6-4e19-8c5f-f39da076dc44"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Liberation Serif&#xA;" size="42"/>
+				</textElement>
+				<text><![CDATA[Philippine Navy]]></text>
+			</staticText>
+			<staticText>
+				<reportElement style="SubTitle" x="172" y="62" width="381" height="22" forecolor="#595854" uuid="ae44b811-abc1-4cf3-86b7-69b8d7489cd1"/>
+				<textElement>
+					<font fontName="Liberation Serif&#xA;"/>
+				</textElement>
+				<text><![CDATA[Recapitulation by Expense Class]]></text>
+			</staticText>
+			<image hAlign="Center" vAlign="Middle">
+				<reportElement x="0" y="0" width="164" height="126" uuid="9ec8dd37-4bda-4b12-90c4-0e655f44f931"/>
+				<imageExpression><![CDATA["/home/ddamasig/JaspersoftWorkspace/MyReports/img/Seal_of_the_Philippine_Navy.png"]]></imageExpression>
 			</image>
 			<staticText>
-				<reportElement style="Title" x="170" y="0" width="263" height="62" uuid="1a652692-054a-40f3-ade5-68d8da36626d"/>
-				<textElement verticalAlignment="Middle"/>
-				<text><![CDATA[Coffee Title]]></text>
-			</staticText>
-			<staticText>
-				<reportElement style="SubTitle" x="219" y="62" width="196" height="22" uuid="88d4231e-f014-4b0d-b871-1737ba63a1ae"/>
-				<textElement>
-					<font fontName="Times New Roman"/>
-				</textElement>
-				<text><![CDATA[Coffee SubTitle]]></text>
-			</staticText>
-			<staticText>
-				<reportElement x="172" y="94" width="383" height="42" uuid="f0bfb1ea-a85a-47cd-a1a4-43f22b45e80f"/>
-				<textElement textAlignment="Right">
-					<font size="10"/>
+				<reportElement x="172" y="94" width="383" height="42" uuid="3a91e968-f5b4-4341-a2b8-63dad8a8c9cb"/>
+				<textElement textAlignment="Left">
+					<font fontName="Liberation Serif&#xA;" size="10"/>
 				</textElement>
 				<text><![CDATA[Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce auctor purus gravida arcu aliquam mattis. Donec et nulla libero, ut varius massa. Nulla sed turpis elit. Etiam aliquet mauris a ligula hendrerit in auctor leo lobortis.]]></text>
 			</staticText>
-			<image>
-				<reportElement x="433" y="-115" width="267" height="209" uuid="5d64e5b3-07bb-48ab-89dc-15c0c46bb19a"/>
-				<imageExpression><![CDATA["coffee_stain.png"]]></imageExpression>
-			</image>
 		</band>
 	</title>
 	<pageHeader>
 		<band splitType="Stretch"/>
 	</pageHeader>
 	<columnHeader>
-		<band height="16" splitType="Stretch">
+		<band height="33" splitType="Stretch">
 			<line>
-				<reportElement positionType="FixRelativeToBottom" x="0" y="15" width="555" height="1" uuid="1a61a836-d137-48b1-ad67-6ff64600bf93"/>
+				<reportElement positionType="FixRelativeToBottom" x="0" y="32" width="555" height="1" uuid="1a61a836-d137-48b1-ad67-6ff64600bf93"/>
 				<graphicElement>
 					<pen lineWidth="0.5" lineColor="#999999"/>
 				</graphicElement>
 			</line>
 			<staticText>
-				<reportElement style="Column header" x="0" y="0" width="277" height="15" forecolor="#736343" uuid="d98860b0-c905-44ec-badd-e818c889958c">
+				<reportElement style="Column header" x="0" y="0" width="150" height="30" forecolor="#000000" uuid="d98860b0-c905-44ec-badd-e818c889958c">
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="80f00ef8-a0e6-432a-aa57-628979ace4fc"/>
 				</reportElement>
-				<text><![CDATA[sum]]></text>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Liberation Serif" size="16"/>
+				</textElement>
+				<text><![CDATA[Expense Class]]></text>
 			</staticText>
 			<staticText>
-				<reportElement style="Column header" x="277" y="0" width="277" height="15" forecolor="#736343" uuid="ebbf1e7a-e2c2-4482-8c6f-ffd71628a0b7">
+				<reportElement style="Column header" x="150" y="0" width="404" height="30" forecolor="#000000" uuid="ebbf1e7a-e2c2-4482-8c6f-ffd71628a0b7">
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="47744255-58d9-4126-a979-d7bbd77bfa6e"/>
 				</reportElement>
-				<text><![CDATA[name]]></text>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Liberation Serif" size="16"/>
+				</textElement>
+				<text><![CDATA[Total Amount]]></text>
 			</staticText>
 		</band>
 	</columnHeader>
@@ -99,22 +107,28 @@ WHERE expense_class_id IN
 			<frame>
 				<reportElement style="Row" mode="Opaque" x="0" y="0" width="555" height="15" uuid="a98495d8-3c8d-4fa0-81f5-30c3efc2f766"/>
 				<textField isStretchWithOverflow="true">
-					<reportElement style="Detail" x="0" y="0" width="277" height="15" uuid="c8f6555c-da50-44d9-90b8-51ed36aa5256">
+					<reportElement style="Detail" x="0" y="0" width="150" height="30" uuid="c8f6555c-da50-44d9-90b8-51ed36aa5256">
 						<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="80f00ef8-a0e6-432a-aa57-628979ace4fc"/>
 					</reportElement>
-					<textFieldExpression><![CDATA[$F{sum}]]></textFieldExpression>
+					<textElement verticalAlignment="Middle">
+						<font fontName="Liberation Serif" size="14"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{name}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement style="Detail" x="277" y="0" width="277" height="15" uuid="9845b827-8904-41f3-87cd-78c6e0b7e301">
+					<reportElement style="Detail" x="150" y="0" width="404" height="30" uuid="9845b827-8904-41f3-87cd-78c6e0b7e301">
 						<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="47744255-58d9-4126-a979-d7bbd77bfa6e"/>
 					</reportElement>
-					<textFieldExpression><![CDATA[$F{name}]]></textFieldExpression>
+					<textElement verticalAlignment="Middle">
+						<font fontName="Liberation Serif" size="14"/>
+					</textElement>
+					<textFieldExpression><![CDATA["₱ " + new DecimalFormat("###,###,###,###,###.00").format($F{total_amount}.doubleValue())]]></textFieldExpression>
 				</textField>
 			</frame>
 		</band>
 	</detail>
 	<columnFooter>
-		<band height="45" splitType="Stretch">
+		<band height="4" splitType="Stretch">
 			<line>
 				<reportElement positionType="FixRelativeToBottom" x="0" y="3" width="555" height="1" uuid="fa45a887-615a-4d84-a2d7-8a2219671b3c"/>
 				<graphicElement>
@@ -124,9 +138,9 @@ WHERE expense_class_id IN
 		</band>
 	</columnFooter>
 	<pageFooter>
-		<band height="25" splitType="Stretch">
+		<band height="40" splitType="Stretch">
 			<frame>
-				<reportElement mode="Opaque" x="-21" y="1" width="597" height="24" forecolor="#D0B48E" backcolor="#F2EBDF" uuid="183682bc-d976-4756-83e0-6625a3f98ed1"/>
+				<reportElement mode="Opaque" x="-21" y="14" width="597" height="24" forecolor="#D0B48E" backcolor="#F2EBDF" uuid="183682bc-d976-4756-83e0-6625a3f98ed1"/>
 				<textField evaluationTime="Report">
 					<reportElement style="Column header" x="533" y="0" width="40" height="20" forecolor="#736343" uuid="0193f9b3-1559-491a-8580-b6988863b6a1"/>
 					<textElement verticalAlignment="Middle">
@@ -152,6 +166,24 @@ WHERE expense_class_id IN
 		</band>
 	</pageFooter>
 	<summary>
-		<band splitType="Stretch"/>
+		<band height="473" splitType="Stretch">
+			<pieChart>
+				<chart evaluationTime="Report">
+					<reportElement x="112" y="112" width="331" height="249" uuid="57cd9fda-62ed-4002-b53c-657cc35c61f7"/>
+					<chartTitle/>
+					<chartSubtitle/>
+					<chartLegend/>
+				</chart>
+				<pieDataset maxCount="3">
+					<keyExpression><![CDATA[$F{name}]]></keyExpression>
+					<valueExpression><![CDATA[$F{total_amount}]]></valueExpression>
+					<labelExpression><![CDATA[$F{name}]]></labelExpression>
+				</pieDataset>
+				<piePlot>
+					<plot/>
+					<itemLabel/>
+				</piePlot>
+			</pieChart>
+		</band>
 	</summary>
 </jasperReport>
